@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generador de Presentaciones</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a2e;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+      color: white;
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .header p {
+      font-size: 0.95rem;
+      opacity: 0.8;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #0f3460;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e8ecf1;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      color: white;
+    }
+
+    .icon-search { background: #3498db; }
+    .icon-email { background: #e74c3c; }
+    .icon-sessions { background: #2ecc71; }
+    .icon-support { background: #f39c12; }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: #555;
+      margin-bottom: 0.3rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.6rem 0.8rem;
+      border: 1.5px solid #ddd;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: #0f3460;
+    }
+
+    .form-group .hint {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 0.2rem;
+    }
+
+    .pricing-info {
+      background: #f8f9fb;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.82rem;
+      color: #666;
+      margin-top: 0.5rem;
+    }
+
+    .pricing-info table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .pricing-info td {
+      padding: 0.2rem 0;
+    }
+
+    .pricing-info td:last-child {
+      text-align: right;
+      font-weight: 600;
+      color: #333;
+    }
+
+    /* Preview Section */
+    .preview-section {
+      display: none;
+    }
+
+    .preview-section.active {
+      display: block;
+    }
+
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .preview-item {
+      background: #f8f9fb;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+    }
+
+    .preview-item .label {
+      font-size: 0.75rem;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .preview-item .value {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: #0f3460;
+      margin-top: 0.3rem;
+    }
+
+    .total-row {
+      background: linear-gradient(135deg, #0f3460, #1a1a2e);
+      border-radius: 8px;
+      padding: 1.2rem;
+      text-align: center;
+      color: white;
+    }
+
+    .total-row .label {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    .total-row .value {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-top: 0.3rem;
+    }
+
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      flex: 1;
+      padding: 0.8rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-preview {
+      background: #e8ecf1;
+      color: #0f3460;
+    }
+
+    .btn-preview:hover:not(:disabled) {
+      background: #d5dbe5;
+    }
+
+    .btn-generate {
+      background: linear-gradient(135deg, #0f3460, #16213e);
+      color: white;
+    }
+
+    .btn-generate:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+    }
+
+    /* Result */
+    .result-section {
+      display: none;
+    }
+
+    .result-section.active {
+      display: block;
+    }
+
+    .result-success {
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .result-success .check {
+      width: 60px;
+      height: 60px;
+      background: #2ecc71;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-size: 1.8rem;
+      color: white;
+    }
+
+    .result-success h3 {
+      margin-bottom: 0.5rem;
+    }
+
+    .result-success a {
+      color: #0f3460;
+      font-weight: 600;
+    }
+
+    .result-json {
+      background: #1a1a2e;
+      color: #a8e6cf;
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: 'Courier New', monospace;
+      font-size: 0.8rem;
+      overflow-x: auto;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 1rem;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    .error-msg {
+      background: #fef2f2;
+      color: #dc2626;
+      border: 1px solid #fecaca;
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      font-size: 0.85rem;
+      margin-top: 1rem;
+      display: none;
+    }
+
+    .error-msg.active {
+      display: block;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .loading.active {
+      display: block;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid #e8ecf1;
+      border-top-color: #0f3460;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .slides-info {
+      margin-top: 1rem;
+      font-size: 0.82rem;
+      color: #666;
+    }
+
+    .slides-info .badge {
+      display: inline-block;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      margin: 0.2rem;
+    }
+
+    .badge-modified {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .badge-deleted {
+      background: #fef2f2;
+      color: #dc2626;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Generador de Presentaciones</h1>
+    <p>Genera propuestas comerciales personalizadas basadas en Google Slides</p>
+  </div>
+
+  <div class="container">
+    <!-- Search Module -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-search">S</div>
+        goSearch - Búsquedas
+      </div>
+      <div class="form-group">
+        <label for="searches">Cantidad de búsquedas por mes</label>
+        <input type="number" id="searches" placeholder="Ej: 50000" min="0">
+        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+      </div>
+      <div class="pricing-info">
+        <table>
+          <tr><td>Text Search</td><td>USD 0.001 por búsqueda</td></tr>
+          <tr><td>Image Search</td><td>USD 0.002 por búsqueda</td></tr>
+        </table>
+        <div class="hint" style="margin-top:0.3rem">Suposición: 100% text search</div>
+      </div>
+    </div>
+
+    <!-- Email Module -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-email">E</div>
+        Emails
+      </div>
+      <div class="form-group">
+        <label for="emails">Cantidad de emails por mes</label>
+        <input type="number" id="emails" placeholder="Ej: 100000" min="0">
+        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+      </div>
+      <div class="pricing-info">
+        <table>
+          <tr><td>Precio por email</td><td>USD 0.0008</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Sessions Module -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-sessions">S</div>
+        Sesiones
+      </div>
+      <div class="form-group">
+        <label for="sessions">Cantidad de sesiones por mes</label>
+        <input type="number" id="sessions" placeholder="Ej: 500000" min="0">
+        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+      </div>
+      <div class="pricing-info">
+        <table>
+          <tr><td>200k - 499k</td><td>USD 0.0025 / sesión</td></tr>
+          <tr><td>500k - 999k</td><td>USD 0.0020 / sesión</td></tr>
+          <tr><td>1M - 2.999M</td><td>USD 0.0015 / sesión</td></tr>
+          <tr><td>3M+</td><td>USD 0.0010 / sesión</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- Support Module -->
+    <div class="card">
+      <div class="card-title">
+        <div class="icon icon-support">H</div>
+        Soporte
+      </div>
+      <div class="form-group">
+        <label for="support_hours">Horas de soporte por mes</label>
+        <input type="number" id="support_hours" placeholder="Ej: 10" min="0">
+        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+      </div>
+    </div>
+
+    <!-- Preview Section -->
+    <div class="preview-section" id="previewSection">
+      <div class="card">
+        <div class="card-title">Resumen de Costos</div>
+        <div class="preview-grid" id="previewGrid"></div>
+        <div class="total-row" id="totalRow">
+          <div class="label">Inversión Mensual Total</div>
+          <div class="value" id="totalValue">USD 0.00</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="btn-row">
+      <button class="btn btn-preview" id="btnPreview">Calcular Preview</button>
+      <button class="btn btn-generate" id="btnGenerate">Generar Presentación</button>
+    </div>
+
+    <!-- Error -->
+    <div class="error-msg" id="errorMsg"></div>
+
+    <!-- Loading -->
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <p>Generando presentación...</p>
+    </div>
+
+    <!-- Result -->
+    <div class="result-section" id="resultSection">
+      <div class="card">
+        <div class="result-success">
+          <div class="check">&#10003;</div>
+          <h3>Presentación generada exitosamente</h3>
+          <p><a id="presentationLink" href="#" target="_blank">Abrir presentación en Google Slides</a></p>
+        </div>
+
+        <div class="slides-info" id="slidesInfo"></div>
+
+        <div class="result-json" id="resultJson"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const $ = (id) => document.getElementById(id);
+
+    function getInputs() {
+      const data = {};
+      const searches = $('searches').value;
+      const emails = $('emails').value;
+      const sessions = $('sessions').value;
+      const supportHours = $('support_hours').value;
+
+      if (searches) data.searches = Number(searches);
+      if (emails) data.emails = Number(emails);
+      if (sessions) data.sessions = Number(sessions);
+      if (supportHours) data.support_hours = Number(supportHours);
+
+      return data;
+    }
+
+    function formatUSD(amount) {
+      return 'USD ' + amount.toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    // Preview
+    $('btnPreview').addEventListener('click', async () => {
+      const inputs = getInputs();
+
+      if (Object.keys(inputs).length === 0) {
+        showError('Ingresá al menos un valor para calcular.');
+        return;
+      }
+
+      hideError();
+
+      try {
+        const res = await fetch('/api/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(inputs),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+
+        renderPreview(data);
+      } catch (err) {
+        showError(err.message);
+      }
+    });
+
+    function renderPreview(data) {
+      const grid = $('previewGrid');
+      grid.innerHTML = '';
+
+      if (data.search) {
+        grid.innerHTML += `
+          <div class="preview-item">
+            <div class="label">goSearch</div>
+            <div class="value">${formatUSD(data.search.monthlyCost)}</div>
+          </div>`;
+      }
+
+      if (data.email) {
+        grid.innerHTML += `
+          <div class="preview-item">
+            <div class="label">Emails</div>
+            <div class="value">${formatUSD(data.email.monthlyCost)}</div>
+          </div>`;
+      }
+
+      if (data.sessions) {
+        grid.innerHTML += `
+          <div class="preview-item">
+            <div class="label">Sesiones (${data.sessions.tier})</div>
+            <div class="value">${formatUSD(data.sessions.monthlyCost)}</div>
+          </div>`;
+      }
+
+      if (data.support) {
+        grid.innerHTML += `
+          <div class="preview-item">
+            <div class="label">Soporte</div>
+            <div class="value">${formatUSD(data.support.monthlyCost)}</div>
+          </div>`;
+      }
+
+      $('totalValue').textContent = formatUSD(data.total);
+      $('previewSection').classList.add('active');
+    }
+
+    // Generate
+    $('btnGenerate').addEventListener('click', async () => {
+      const inputs = getInputs();
+
+      if (Object.keys(inputs).length === 0) {
+        showError('Ingresá al menos un valor para generar la presentación.');
+        return;
+      }
+
+      hideError();
+      $('resultSection').classList.remove('active');
+      $('loading').classList.add('active');
+      $('btnGenerate').disabled = true;
+
+      try {
+        const res = await fetch('/api/generate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(inputs),
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || data.details);
+
+        renderResult(data);
+      } catch (err) {
+        showError(err.message);
+      } finally {
+        $('loading').classList.remove('active');
+        $('btnGenerate').disabled = false;
+      }
+    });
+
+    function renderResult(data) {
+      $('presentationLink').href = data.presentationUrl;
+
+      // Slides info
+      let infoHtml = '<strong>Slides modificadas:</strong> ';
+      if (data.slides_modified.length > 0) {
+        infoHtml += data.slides_modified
+          .map(s => `<span class="badge badge-modified">${s.module}</span>`)
+          .join('');
+      } else {
+        infoHtml += 'Ninguna';
+      }
+
+      infoHtml += '<br><strong>Slides eliminadas:</strong> ';
+      if (data.slides_deleted.length > 0) {
+        infoHtml += data.slides_deleted
+          .map(s => `<span class="badge badge-deleted">${s.module}</span>`)
+          .join('');
+      } else {
+        infoHtml += 'Ninguna';
+      }
+
+      $('slidesInfo').innerHTML = infoHtml;
+      $('resultJson').textContent = JSON.stringify(data, null, 2);
+      $('resultSection').classList.add('active');
+    }
+
+    function showError(msg) {
+      const el = $('errorMsg');
+      el.textContent = msg;
+      el.classList.add('active');
+    }
+
+    function hideError() {
+      $('errorMsg').classList.remove('active');
+    }
+
+    // Live preview on input change
+    let debounceTimer;
+    document.querySelectorAll('input[type="number"]').forEach(input => {
+      input.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        debounceTimer = setTimeout(() => {
+          const inputs = getInputs();
+          if (Object.keys(inputs).length > 0) {
+            fetch('/api/preview', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(inputs),
+            })
+            .then(r => r.json())
+            .then(data => {
+              if (data.total !== undefined) renderPreview(data);
+            })
+            .catch(() => {});
+          } else {
+            $('previewSection').classList.remove('active');
+          }
+        }, 300);
+      });
+    });
+  </script>
+</body>
+</html>
