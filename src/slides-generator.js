@@ -278,11 +278,12 @@ export async function generatePresentation(inputs, options = {}) {
   let logoImageUrl = null;
   const imgPlacement = findImgPlaceholderPlacement(slidesList);
   if (logoBuffer && logoBuffer.length > 0 && imgPlacement) {
+    const logosParent = copyParent ? await ensureLogosFolderId(drive, copyParent) : undefined;
     logoImageUrl = await uploadLogoToDriveAndGetUrl(
       drive,
       logoBuffer,
       logoMimeType,
-      copyParent
+      logosParent
     );
     let imageSize = imgPlacement.size;
     let imageTransform = imgPlacement.transform;
@@ -384,6 +385,30 @@ export async function generatePresentation(inputs, options = {}) {
 }
 
 const ALLOWED_LOGO_MIMES = new Set(['image/png', 'image/jpeg', 'image/gif', 'image/webp']);
+
+/** Carpeta `logos` bajo DRIVE_COPY_PARENT_ID (misma unidad compartida que las propuestas). */
+async function ensureLogosFolderId(drive, parentFolderId) {
+  if (!parentFolderId) return undefined;
+  const listed = await drive.files.list({
+    q: `'${parentFolderId}' in parents and name = 'logos' and mimeType = 'application/vnd.google-apps.folder' and trashed = false`,
+    fields: 'files(id)',
+    pageSize: 1,
+    supportsAllDrives: true,
+    includeItemsFromAllDrives: true,
+  });
+  const existing = listed.data.files?.[0]?.id;
+  if (existing) return existing;
+  const created = await drive.files.create({
+    requestBody: {
+      name: 'logos',
+      mimeType: 'application/vnd.google-apps.folder',
+      parents: [parentFolderId],
+    },
+    fields: 'id',
+    supportsAllDrives: true,
+  });
+  return created.data.id;
+}
 
 async function uploadLogoToDriveAndGetUrl(drive, buffer, mimeType, parentFolderId) {
   const mt = ALLOWED_LOGO_MIMES.has(mimeType) ? mimeType : 'image/png';
