@@ -4,119 +4,382 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Generador de Presentaciones</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --surface: #F8F8FC;
+      --surface-container-low: #F3F3F7;
+      --surface-container-lowest: #FFFFFF;
+      --surface-bright: #FFFFFF;
+      --primary: #5534C6;
+      --primary-container: #6E51E0;
+      --violet-accent: #7B63DB;
+      --deep-indigo: #161C28;
+      --on-surface: #1A1C1F;
+      --on-surface-muted: rgba(26, 28, 31, 0.62);
+      --outline-variant: rgba(26, 28, 31, 0.15);
+      --shadow-atmospheric: 0 32px 64px -16px rgba(22, 28, 40, 0.08),
+        0 12px 24px -8px rgba(85, 52, 198, 0.06);
+      --shadow-lift: 0 24px 48px -12px rgba(22, 28, 40, 0.07);
+      --glass: rgba(248, 248, 252, 0.62);
+      --radius-md: 0.75rem;
+      --radius-sm: 0.25rem;
+      --space-8: 2rem;
+      --space-20: 5rem;
+      --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
     *, *::before, *::after {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
     }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
-      background: #f0f2f5;
-      color: #1a1a2e;
-      min-height: 100vh;
+    html {
+      scroll-behavior: smooth;
     }
 
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-size: 0.875rem;
+      background: var(--surface);
+      color: var(--on-surface);
+      min-height: 100vh;
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    /* Fondo editorial: capas sin bordes */
+    .page-bg {
+      position: fixed;
+      inset: 0;
+      z-index: -2;
+      background:
+        radial-gradient(ellipse 120% 80% at 100% -20%, rgba(123, 99, 219, 0.14) 0%, transparent 55%),
+        radial-gradient(ellipse 90% 60% at -10% 50%, rgba(85, 52, 198, 0.08) 0%, transparent 50%),
+        var(--surface);
+    }
+
+    .page-bg::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+      opacity: 0.5;
+      pointer-events: none;
+    }
+
+    /* Header vidrio */
     .header {
-      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
-      color: white;
-      padding: 2rem 0;
-      text-align: center;
+      position: relative;
+      padding: var(--space-20) clamp(1.25rem, 5vw, 4rem) var(--space-8);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: none;
+      box-shadow: 0 1px 0 rgba(255, 255, 255, 0.5) inset;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-left: clamp(0.5rem, 3vw, 2.5rem);
+      padding-right: 1rem;
+    }
+
+    .header-kicker {
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--violet-accent);
+      margin-bottom: 1rem;
+      opacity: 0;
+      animation: fadeUp 0.9s var(--ease-out-expo) 0.1s forwards;
     }
 
     .header h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.1;
+      color: var(--deep-indigo);
+      max-width: 45ch;
+      opacity: 0;
+      animation: fadeUp 0.95s var(--ease-out-expo) 0.2s forwards;
     }
 
     .header p {
-      font-size: 0.95rem;
-      opacity: 0.8;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      color: var(--on-surface-muted);
+      max-width: 36ch;
+      opacity: 0;
+      animation: fadeUp 1s var(--ease-out-expo) 0.35s forwards;
+    }
+
+    .header-glow {
+      position: absolute;
+      top: -40%;
+      right: -5%;
+      width: min(55vw, 420px);
+      height: min(55vw, 420px);
+      background: radial-gradient(circle, rgba(110, 81, 224, 0.35) 0%, transparent 70%);
+      filter: blur(60px);
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: clamp(2rem, 4vw, var(--space-20)) clamp(1rem, 4vw, 3rem) 4rem;
+      padding-left: clamp(1.25rem, 5vw, 4rem);
     }
 
     .card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      padding: 1.5rem 2rem;
-      margin-bottom: 1.5rem;
+      background: var(--surface-container-lowest);
+      border-radius: 1rem;
+      padding: clamp(1.5rem, 3vw, 2rem);
+      margin-bottom: var(--space-8);
+      box-shadow: var(--shadow-lift);
+      position: relative;
+      opacity: 0;
+      animation: cardIn 0.75s var(--ease-out-expo) forwards;
+    }
+
+    .card:nth-of-type(1) { animation-delay: 0.4s; }
+    .card:nth-of-type(2) { animation-delay: 0.48s; }
+    .card:nth-of-type(3) { animation-delay: 0.56s; }
+    .card:nth-of-type(4) { animation-delay: 0.64s; }
+    .card:nth-of-type(5) { animation-delay: 0.72s; }
+    .card:nth-of-type(6) { animation-delay: 0.8s; }
+
+    @keyframes cardIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .preview-section .card,
+    .result-section .card {
+      animation-delay: 0s;
+      animation: none;
+      opacity: 1;
     }
 
     .card-title {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #0f3460;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #e8ecf1;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.125rem;
+      font-weight: 800;
+      color: var(--deep-indigo);
+      margin-bottom: 1.75rem;
+      padding-bottom: 0;
+      border: none;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.75rem;
+      letter-spacing: -0.02em;
     }
 
     .card-title .icon {
-      width: 28px;
-      height: 28px;
-      border-radius: 6px;
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.9rem;
-      color: white;
+      font-size: 0.8rem;
+      font-weight: 700;
+      font-family: 'Manrope', sans-serif;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 8px 20px -6px rgba(85, 52, 198, 0.45);
+      transition: transform 0.35s var(--ease-out-expo);
     }
 
-    .icon-search { background: #3498db; }
-    .icon-email { background: #e74c3c; }
-    .icon-sessions { background: #2ecc71; }
-    .icon-support { background: #f39c12; }
+    .card:hover .icon {
+      transform: scale(1.05) rotate(-2deg);
+    }
+
+    .icon-brand { background: linear-gradient(135deg, var(--primary), var(--primary-container)); }
+    .icon-search { background: linear-gradient(135deg, #4A6CF7, #5534C6); }
+    .icon-email { background: linear-gradient(135deg, #E85D75, #C03484); }
+    .icon-sessions { background: linear-gradient(135deg, #2DD4A7, #0D9B7A); }
+    .icon-support { background: linear-gradient(135deg, #F5A623, #E07800); }
 
     .form-group {
-      margin-bottom: 1rem;
+      margin-bottom: 1.75rem;
     }
 
-    .form-group label {
+    .form-group:last-child {
+      margin-bottom: 0;
+    }
+
+    .field-head {
+      margin-bottom: 0.65rem;
+    }
+
+    .field-label {
       display: block;
-      font-size: 0.85rem;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.0625rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: var(--deep-indigo);
+      line-height: 1.25;
+    }
+
+    .field-meta {
+      display: block;
+      margin-top: 0.35rem;
+      font-size: 0.75rem;
       font-weight: 500;
-      color: #555;
-      margin-bottom: 0.3rem;
+      color: var(--on-surface-muted);
+      line-height: 1.4;
     }
 
-    .form-group input {
+    .field-meta code {
+      font-size: 0.85em;
+      padding: 0.08em 0.35em;
+      background: rgba(85, 52, 198, 0.08);
+      border-radius: 4px;
+      color: var(--primary);
+    }
+
+    .form-group input:not([type="file"]),
+    .form-group textarea {
       width: 100%;
-      padding: 0.6rem 0.8rem;
-      border: 1.5px solid #ddd;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      transition: border-color 0.2s;
+      padding: 0.75rem 1rem;
+      background: var(--surface-container-low);
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 0.9375rem;
+      font-family: inherit;
+      color: var(--on-surface);
       outline: none;
+      transition: box-shadow 0.25s ease, background 0.2s ease;
     }
 
-    .form-group input:focus {
-      border-color: #0f3460;
+    .form-group textarea {
+      min-height: 120px;
+      resize: vertical;
+    }
+
+    .form-group input:not([type="file"]):focus,
+    .form-group textarea:focus {
+      background: var(--surface-container-lowest);
+      box-shadow: 0 0 0 2px rgba(85, 52, 198, 0.2);
     }
 
     .form-group .hint {
       font-size: 0.75rem;
-      color: #999;
-      margin-top: 0.2rem;
+      color: var(--on-surface-muted);
+      margin-top: 0.55rem;
+      line-height: 1.5;
+    }
+
+    /* Dropzone logo */
+    .dropzone {
+      position: relative;
+      border-radius: var(--radius-md);
+      min-height: 148px;
+      background: linear-gradient(145deg, rgba(85, 52, 198, 0.04) 0%, rgba(123, 99, 219, 0.08) 100%);
+      box-shadow: inset 0 0 0 1px rgba(85, 52, 198, 0.12);
+      transition: background 0.35s ease, box-shadow 0.35s ease, transform 0.35s var(--ease-out-expo);
+    }
+
+    .dropzone:hover {
+      background: linear-gradient(145deg, rgba(85, 52, 198, 0.07) 0%, rgba(123, 99, 219, 0.11) 100%);
+      box-shadow: inset 0 0 0 1px rgba(85, 52, 198, 0.2), 0 12px 32px -16px rgba(85, 52, 198, 0.15);
+    }
+
+    .dropzone.is-dragover {
+      background: linear-gradient(145deg, rgba(85, 52, 198, 0.12) 0%, rgba(123, 99, 219, 0.18) 100%);
+      box-shadow: inset 0 0 0 2px rgba(85, 52, 198, 0.35), 0 16px 40px -12px rgba(85, 52, 198, 0.25);
+      transform: scale(1.01);
+    }
+
+    .dropzone-input {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+      z-index: 2;
+    }
+
+    .dropzone-ui {
+      position: relative;
+      z-index: 1;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 1.75rem 1.25rem;
+      text-align: center;
+    }
+
+    .dropzone-icon {
+      width: 40px;
+      height: 40px;
+      margin-bottom: 0.85rem;
+      color: var(--primary);
+      opacity: 0.9;
+    }
+
+    .dropzone-title {
+      font-family: 'Manrope', sans-serif;
+      font-size: 0.9375rem;
+      font-weight: 700;
+      color: var(--deep-indigo);
+      letter-spacing: -0.02em;
+    }
+
+    .dropzone-title .dropzone-em {
+      color: var(--primary);
+    }
+
+    .dropzone-sub {
+      margin-top: 0.4rem;
+      font-size: 0.75rem;
+      color: var(--on-surface-muted);
+      max-width: 28ch;
+      line-height: 1.45;
+    }
+
+    .dropzone-sub.is-file {
+      color: var(--deep-indigo);
+      font-weight: 600;
     }
 
     .pricing-info {
-      background: #f8f9fb;
-      border-radius: 8px;
-      padding: 0.8rem 1rem;
-      font-size: 0.82rem;
-      color: #666;
-      margin-top: 0.5rem;
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      font-size: 0.8125rem;
+      color: var(--on-surface-muted);
+      margin-top: 0.75rem;
     }
 
     .pricing-info table {
@@ -124,198 +387,266 @@
       border-collapse: collapse;
     }
 
+    .pricing-info tr + tr td {
+      padding-top: 0.65rem;
+    }
+
     .pricing-info td {
-      padding: 0.2rem 0;
+      padding: 0;
+      vertical-align: top;
     }
 
     .pricing-info td:last-child {
       text-align: right;
       font-weight: 600;
-      color: #333;
+      color: var(--on-surface);
     }
 
-    /* Preview Section */
     .preview-section {
       display: none;
     }
 
     .preview-section.active {
       display: block;
+      animation: fadeUp 0.6s var(--ease-out-expo);
     }
 
     .preview-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1rem;
-      margin-bottom: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     .preview-item {
-      background: #f8f9fb;
-      border-radius: 8px;
-      padding: 1rem;
-      text-align: center;
+      background: var(--surface-container-low);
+      border-radius: var(--radius-md);
+      padding: 1.25rem 1rem;
+      text-align: left;
+      transition: transform 0.35s var(--ease-out-expo), box-shadow 0.35s ease;
+    }
+
+    .preview-item:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-lift);
     }
 
     .preview-item .label {
-      font-size: 0.75rem;
-      color: #888;
+      font-size: 0.625rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      color: var(--on-surface-muted);
     }
 
     .preview-item .value {
-      font-size: 1.3rem;
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.35rem;
       font-weight: 700;
-      color: #0f3460;
-      margin-top: 0.3rem;
+      color: var(--deep-indigo);
+      margin-top: 0.4rem;
+      letter-spacing: -0.02em;
     }
 
     .total-row {
-      background: linear-gradient(135deg, #0f3460, #1a1a2e);
-      border-radius: 8px;
-      padding: 1.2rem;
-      text-align: center;
-      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+      border-radius: var(--radius-md);
+      padding: 1.5rem 1.25rem;
+      text-align: left;
+      color: #fff;
+      box-shadow: 0 20px 40px -12px rgba(85, 52, 198, 0.35);
     }
 
     .total-row .label {
-      font-size: 0.85rem;
-      opacity: 0.8;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      opacity: 0.85;
     }
 
     .total-row .value {
-      font-size: 1.8rem;
-      font-weight: 700;
-      margin-top: 0.3rem;
+      font-family: 'Manrope', sans-serif;
+      font-size: clamp(1.5rem, 4vw, 2rem);
+      font-weight: 800;
+      margin-top: 0.35rem;
+      letter-spacing: -0.03em;
     }
 
-    /* Buttons */
     .btn-row {
       display: flex;
+      flex-wrap: wrap;
       gap: 1rem;
-      margin-top: 1.5rem;
+      margin-top: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.8s var(--ease-out-expo) 0.55s forwards;
     }
 
     .btn {
       flex: 1;
-      padding: 0.8rem 1.5rem;
+      min-width: 160px;
+      padding: 0.9rem 1.5rem;
       border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
+      border-radius: var(--radius-md);
+      font-size: 0.9375rem;
       font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
-      transition: all 0.2s;
+      transition: transform 0.3s var(--ease-out-expo), box-shadow 0.3s ease, opacity 0.2s;
     }
 
     .btn:disabled {
-      opacity: 0.5;
+      opacity: 0.45;
       cursor: not-allowed;
-    }
-
-    .btn-preview {
-      background: #e8ecf1;
-      color: #0f3460;
-    }
-
-    .btn-preview:hover:not(:disabled) {
-      background: #d5dbe5;
+      transform: none;
     }
 
     .btn-generate {
-      background: linear-gradient(135deg, #0f3460, #16213e);
-      color: white;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--primary-container) 100%);
+      color: #fff;
+      box-shadow: 0 12px 32px -8px rgba(85, 52, 198, 0.45);
     }
 
     .btn-generate:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(15,52,96,0.3);
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px -10px rgba(85, 52, 198, 0.5);
     }
 
-    /* Result */
     .result-section {
       display: none;
     }
 
     .result-section.active {
       display: block;
+      animation: fadeUp 0.65s var(--ease-out-expo);
     }
 
     .result-success {
-      text-align: center;
-      padding: 1rem 0;
+      text-align: left;
+      padding: 0.5rem 0 1rem;
     }
 
     .result-success .check {
-      width: 60px;
-      height: 60px;
-      background: #2ecc71;
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #2DD4A7, #0D9B7A);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 1rem;
-      font-size: 1.8rem;
+      margin: 0 0 1rem 0;
+      font-size: 1.5rem;
       color: white;
+      box-shadow: 0 12px 28px -8px rgba(13, 155, 122, 0.45);
+      animation: popIn 0.55s var(--ease-out-expo);
+    }
+
+    @keyframes popIn {
+      from {
+        transform: scale(0.6);
+        opacity: 0;
+      }
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
 
     .result-success h3 {
+      font-family: 'Manrope', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--deep-indigo);
       margin-bottom: 0.5rem;
     }
 
     .result-success a {
-      color: #0f3460;
+      color: var(--primary);
       font-weight: 600;
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .result-success a:hover {
+      border-bottom-color: var(--primary);
     }
 
     .result-json {
-      background: #1a1a2e;
-      color: #a8e6cf;
-      border-radius: 8px;
-      padding: 1rem;
-      font-family: 'Courier New', monospace;
-      font-size: 0.8rem;
+      background: var(--deep-indigo);
+      color: #C4F0E0;
+      border-radius: var(--radius-md);
+      padding: 1.15rem;
+      font-family: ui-monospace, 'Cascadia Code', monospace;
+      font-size: 0.75rem;
       overflow-x: auto;
-      max-height: 400px;
+      max-height: 360px;
       overflow-y: auto;
-      margin-top: 1rem;
+      margin-top: 1.25rem;
       white-space: pre-wrap;
       word-break: break-all;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
     }
 
     .error-msg {
-      background: #fef2f2;
-      color: #dc2626;
-      border: 1px solid #fecaca;
-      border-radius: 8px;
-      padding: 0.8rem 1rem;
-      font-size: 0.85rem;
-      margin-top: 1rem;
+      background: rgba(220, 38, 38, 0.08);
+      color: #B91C1C;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
+      font-size: 0.8125rem;
+      margin-top: 1.25rem;
       display: none;
+      box-shadow: 0 0 0 1px rgba(220, 38, 38, 0.12);
     }
 
     .error-msg.active {
       display: block;
+      animation: fadeUp 0.4s var(--ease-out-expo);
     }
 
     .loading {
       display: none;
       text-align: center;
-      padding: 2rem;
+      padding: 3rem 1.5rem;
     }
 
     .loading.active {
       display: block;
+      animation: fadeUp 0.4s ease;
+    }
+
+    .loading p {
+      font-size: 0.8125rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--on-surface-muted);
+      margin-top: 1.25rem;
+    }
+
+    .spinner-wrap {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto;
     }
 
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid #e8ecf1;
-      border-top-color: #0f3460;
+      position: absolute;
+      inset: 0;
       border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 1rem;
+      border: 2px solid transparent;
+      border-top-color: var(--primary);
+      border-right-color: var(--violet-accent);
+      animation: spin 0.9s linear infinite;
+    }
+
+    .spinner-inner {
+      position: absolute;
+      inset: 8px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      border-bottom-color: var(--primary-container);
+      animation: spin 1.2s linear infinite reverse;
     }
 
     @keyframes spin {
@@ -323,68 +654,127 @@
     }
 
     .slides-info {
-      margin-top: 1rem;
-      font-size: 0.82rem;
-      color: #666;
+      margin-top: 1.25rem;
+      font-size: 0.8125rem;
+      color: var(--on-surface-muted);
+      line-height: 1.7;
     }
 
     .slides-info .badge {
       display: inline-block;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-size: 0.72rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      font-size: 0.68rem;
       font-weight: 600;
-      margin: 0.2rem;
+      margin: 0.15rem 0.2rem 0.15rem 0;
     }
 
     .badge-modified {
-      background: #dbeafe;
-      color: #1d4ed8;
+      background: rgba(85, 52, 198, 0.12);
+      color: var(--primary);
     }
 
     .badge-deleted {
-      background: #fef2f2;
-      color: #dc2626;
+      background: rgba(220, 38, 38, 0.1);
+      color: #B91C1C;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      html {
+        scroll-behavior: auto;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>Generador de Presentaciones</h1>
-    <p>Genera propuestas comerciales personalizadas basadas en Google Slides</p>
-  </div>
+  <div class="page-bg" aria-hidden="true"></div>
+
+  <header class="header">
+    <div class="header-glow" aria-hidden="true"></div>
+    <div class="header-inner">
+      <p class="header-kicker">Propuestas comerciales</p>
+      <h1>Generador de presentaciones</h1>
+      <p>Plantilla Google Slides y pricing dinámico.</p>
+    </div>
+  </header>
 
   <div class="container">
-    <!-- Search Module -->
     <div class="card">
       <div class="card-title">
-        <div class="icon icon-search">S</div>
-        goSearch - Búsquedas
+        <span class="icon icon-brand" aria-hidden="true">M</span>
+        Cliente, marca y resumen
       </div>
       <div class="form-group">
-        <label for="searches">Cantidad de búsquedas por mes</label>
-        <input type="number" id="searches" placeholder="Ej: 50000" min="0">
-        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+        <div class="field-head">
+          <label class="field-label" for="nombreCliente">Nombre del cliente</label>
+          <span class="field-meta">Se usa en el título del archivo: <strong>Propuesta - cliente - fecha</strong></span>
+        </div>
+        <input type="text" id="nombreCliente" placeholder="Ej. Acme Corp" autocomplete="organization">
+      </div>
+      <div class="form-group">
+        <div class="field-head">
+          <label class="field-label" for="logo">Logo</label>
+          <span class="field-meta">En la plantilla debe existir el texto <code>{{img}}</code> en su propia caja</span>
+        </div>
+        <div class="dropzone" id="logoDropzone">
+          <input type="file" id="logo" class="dropzone-input" accept="image/png,image/jpeg,image/gif,image/webp" aria-describedby="logoDropHint">
+          <div class="dropzone-ui">
+            <svg class="dropzone-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="dropzone-title"><span class="dropzone-em">Arrastrá el logo</span> o tocá para elegir</p>
+            <p class="dropzone-sub" id="logoDropHint">PNG, JPEG, GIF o WebP · máx. 5 MB</p>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <div class="field-head">
+          <label class="field-label" for="resumenEjecutivo">Resumen ejecutivo</label>
+          <span class="field-meta">Placeholder <code>{{resumenEjecutivo}}</code></span>
+        </div>
+        <textarea id="resumenEjecutivo" placeholder="Texto para la diapositiva correspondiente…"></textarea>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <span class="icon icon-search" aria-hidden="true">S</span>
+        goSearch — Búsquedas
+      </div>
+      <div class="form-group">
+        <div class="field-head">
+          <label class="field-label" for="searches">Búsquedas por mes</label>
+          <span class="field-meta">Vacío = no se incluye este módulo en el deck</span>
+        </div>
+        <input type="number" id="searches" placeholder="Ej. 50000" min="0">
       </div>
       <div class="pricing-info">
         <table>
           <tr><td>Text Search</td><td>USD 0.001 por búsqueda</td></tr>
           <tr><td>Image Search</td><td>USD 0.002 por búsqueda</td></tr>
         </table>
-        <div class="hint" style="margin-top:0.3rem">Suposición: 100% text search</div>
+        <div class="hint" style="margin-top:0.5rem">Suposición: 100% text search</div>
       </div>
     </div>
 
-    <!-- Email Module -->
     <div class="card">
       <div class="card-title">
-        <div class="icon icon-email">E</div>
+        <span class="icon icon-email" aria-hidden="true">E</span>
         Emails
       </div>
       <div class="form-group">
-        <label for="emails">Cantidad de emails por mes</label>
-        <input type="number" id="emails" placeholder="Ej: 100000" min="0">
-        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+        <div class="field-head">
+          <label class="field-label" for="emails">Emails por mes</label>
+          <span class="field-meta">Vacío = módulo omitido</span>
+        </div>
+        <input type="number" id="emails" placeholder="Ej. 100000" min="0">
       </div>
       <div class="pricing-info">
         <table>
@@ -393,16 +783,17 @@
       </div>
     </div>
 
-    <!-- Sessions Module -->
     <div class="card">
       <div class="card-title">
-        <div class="icon icon-sessions">S</div>
+        <span class="icon icon-sessions" aria-hidden="true">S</span>
         Sesiones
       </div>
       <div class="form-group">
-        <label for="sessions">Cantidad de sesiones por mes</label>
-        <input type="number" id="sessions" placeholder="Ej: 500000" min="0">
-        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+        <div class="field-head">
+          <label class="field-label" for="sessions">Sesiones por mes</label>
+          <span class="field-meta">Vacío = módulo omitido</span>
+        </div>
+        <input type="number" id="sessions" placeholder="Ej. 500000" min="0">
       </div>
       <div class="pricing-info">
         <table>
@@ -414,57 +805,58 @@
       </div>
     </div>
 
-    <!-- Support Module -->
     <div class="card">
       <div class="card-title">
-        <div class="icon icon-support">H</div>
+        <span class="icon icon-support" aria-hidden="true">H</span>
         Soporte
       </div>
       <div class="form-group">
-        <label for="support_hours">Horas de soporte por mes</label>
-        <input type="number" id="support_hours" placeholder="Ej: 10" min="0">
-        <div class="hint">Dejar vacío para excluir este módulo de la presentación</div>
+        <div class="field-head">
+          <label class="field-label" for="support_hours">Horas de soporte por mes</label>
+          <span class="field-meta">Vacío = módulo omitido · USD 40 / h</span>
+        </div>
+        <input type="number" id="support_hours" placeholder="Ej. 10" min="0">
+      </div>
+      <div class="pricing-info">
+        <table>
+          <tr><td>Precio por hora</td><td>USD 40,00</td></tr>
+        </table>
       </div>
     </div>
 
-    <!-- Preview Section -->
     <div class="preview-section" id="previewSection">
       <div class="card">
-        <div class="card-title">Resumen de Costos</div>
+        <div class="card-title">Inversión estimada</div>
         <div class="preview-grid" id="previewGrid"></div>
         <div class="total-row" id="totalRow">
-          <div class="label">Inversión Mensual Total</div>
+          <div class="label">Inversión mensual total</div>
           <div class="value" id="totalValue">USD 0.00</div>
         </div>
       </div>
     </div>
 
-    <!-- Buttons -->
     <div class="btn-row">
-      <button class="btn btn-preview" id="btnPreview">Calcular Preview</button>
-      <button class="btn btn-generate" id="btnGenerate">Generar Presentación</button>
+      <button type="button" class="btn btn-generate" id="btnGenerate">Generar presentación</button>
     </div>
 
-    <!-- Error -->
-    <div class="error-msg" id="errorMsg"></div>
+    <div class="error-msg" id="errorMsg" role="alert"></div>
 
-    <!-- Loading -->
-    <div class="loading" id="loading">
-      <div class="spinner"></div>
-      <p>Generando presentación...</p>
+    <div class="loading" id="loading" aria-live="polite">
+      <div class="spinner-wrap">
+        <div class="spinner"></div>
+        <div class="spinner-inner"></div>
+      </div>
+      <p>Generando presentación</p>
     </div>
 
-    <!-- Result -->
     <div class="result-section" id="resultSection">
       <div class="card">
         <div class="result-success">
-          <div class="check">&#10003;</div>
-          <h3>Presentación generada exitosamente</h3>
-          <p><a id="presentationLink" href="#" target="_blank">Abrir presentación en Google Slides</a></p>
+          <div class="check" aria-hidden="true">&#10003;</div>
+          <h3>Presentación lista</h3>
+          <p><a id="presentationLink" href="#" target="_blank" rel="noopener">Abrir en Google Slides</a></p>
         </div>
-
         <div class="slides-info" id="slidesInfo"></div>
-
         <div class="result-json" id="resultJson"></div>
       </div>
     </div>
@@ -475,16 +867,17 @@
 
     function getInputs() {
       const data = {};
-      const searches = $('searches').value;
-      const emails = $('emails').value;
-      const sessions = $('sessions').value;
-      const supportHours = $('support_hours').value;
-
-      if (searches) data.searches = Number(searches);
-      if (emails) data.emails = Number(emails);
-      if (sessions) data.sessions = Number(sessions);
-      if (supportHours) data.support_hours = Number(supportHours);
-
+      const addPositive = (key, raw) => {
+        const s = String(raw ?? '').trim();
+        if (s === '') return;
+        const n = Number(s);
+        if (!Number.isFinite(n) || n <= 0) return;
+        data[key] = n;
+      };
+      addPositive('searches', $('searches').value);
+      addPositive('emails', $('emails').value);
+      addPositive('sessions', $('sessions').value);
+      addPositive('support_hours', $('support_hours').value);
       return data;
     }
 
@@ -495,32 +888,126 @@
       });
     }
 
-    // Preview
-    $('btnPreview').addEventListener('click', async () => {
-      const inputs = getInputs();
+    /** Lado máximo del canvas (evita límites de canvas en navegadores). */
+    const LOGO_SQUARE_MAX_SIDE = 8192;
 
-      if (Object.keys(inputs).length === 0) {
-        showError('Ingresá al menos un valor para calcular.');
-        return;
+    /**
+     * Si la imagen no es 1:1, genera un PNG cuadrado (lado = max(w,h)),
+     * con la imagen escalada tipo contain y márgenes transparentes.
+     * Si ya es cuadrada, devuelve el File original.
+     */
+    async function loadImageForCanvas(file) {
+      try {
+        const bitmap = await createImageBitmap(file);
+        return {
+          w: bitmap.width,
+          h: bitmap.height,
+          draw: (ctx, sx, sy, sw, sh, dx, dy, dw, dh) => ctx.drawImage(bitmap, sx, sy, sw, sh, dx, dy, dw, dh),
+          dispose: () => bitmap.close(),
+        };
+      } catch {
+        const img = await new Promise((resolve, reject) => {
+          const el = new Image();
+          const u = URL.createObjectURL(file);
+          el.onload = () => {
+            URL.revokeObjectURL(u);
+            resolve(el);
+          };
+          el.onerror = () => {
+            URL.revokeObjectURL(u);
+            reject(new Error('decode'));
+          };
+          el.src = u;
+        });
+        return {
+          w: img.naturalWidth,
+          h: img.naturalHeight,
+          draw: (ctx, sx, sy, sw, sh, dx, dy, dw, dh) => ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh),
+          dispose: () => {},
+        };
+      }
+    }
+
+    async function normalizeLogoToSquareContain(file) {
+      if (!file || !/^image\//i.test(file.type)) return file;
+
+      let source;
+      try {
+        source = await loadImageForCanvas(file);
+      } catch {
+        return file;
       }
 
-      hideError();
+      const w = source.w;
+      const h = source.h;
+      if (w < 1 || h < 1) {
+        source.dispose();
+        return file;
+      }
+
+      if (w === h) {
+        source.dispose();
+        return file;
+      }
+
+      let scalePre = 1;
+      const rawSide = Math.max(w, h);
+      if (rawSide > LOGO_SQUARE_MAX_SIDE) {
+        scalePre = LOGO_SQUARE_MAX_SIDE / rawSide;
+      }
+
+      const sw = Math.max(1, Math.round(w * scalePre));
+      const sh = Math.max(1, Math.round(h * scalePre));
+      const side = Math.max(sw, sh);
+
+      const scale = Math.min(side / sw, side / sh);
+      const dw = sw * scale;
+      const dh = sh * scale;
+      const ox = (side - dw) / 2;
+      const oy = (side - dh) / 2;
+
+      const canvas = document.createElement('canvas');
+      canvas.width = side;
+      canvas.height = side;
+      const ctx = canvas.getContext('2d', { alpha: true });
+      if (!ctx) {
+        source.dispose();
+        return file;
+      }
+
+      ctx.clearRect(0, 0, side, side);
 
       try {
-        const res = await fetch('/api/preview', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(inputs),
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-
-        renderPreview(data);
-      } catch (err) {
-        showError(err.message);
+        if (scalePre < 1) {
+          const tmp = document.createElement('canvas');
+          tmp.width = sw;
+          tmp.height = sh;
+          const tctx = tmp.getContext('2d');
+          if (!tctx) {
+            source.dispose();
+            return file;
+          }
+          source.draw(tctx, 0, 0, w, h, 0, 0, sw, sh);
+          source.dispose();
+          source = null;
+          ctx.drawImage(tmp, ox, oy, dw, dh);
+        } else {
+          source.draw(ctx, 0, 0, w, h, ox, oy, dw, dh);
+          source.dispose();
+          source = null;
+        }
+      } catch {
+        if (source) source.dispose();
+        return file;
       }
-    });
+
+      const blob = await new Promise((resolve) => {
+        canvas.toBlob((b) => resolve(b), 'image/png');
+      });
+
+      if (!blob || blob.size === 0) return file;
+      return new File([blob], 'logo.png', { type: 'image/png' });
+    }
 
     function renderPreview(data) {
       const grid = $('previewGrid');
@@ -558,11 +1045,35 @@
           </div>`;
       }
 
-      $('totalValue').textContent = formatUSD(data.total);
+      const total = Number(data.total);
+      $('totalValue').textContent = formatUSD(Number.isFinite(total) ? total : 0);
       $('previewSection').classList.add('active');
     }
 
-    // Generate
+    let previewDebounceTimer;
+    function scheduleInvestmentPreview() {
+      clearTimeout(previewDebounceTimer);
+      previewDebounceTimer = setTimeout(async () => {
+        const inputs = getInputs();
+        if (Object.keys(inputs).length === 0) {
+          $('previewSection').classList.remove('active');
+          return;
+        }
+        try {
+          const res = await fetch('/api/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(inputs),
+          });
+          const data = await res.json();
+          if (!res.ok) return;
+          if (data.total !== undefined) renderPreview(data);
+        } catch {
+          /* silencioso: el usuario puede estar escribiendo */
+        }
+      }, 280);
+    }
+
     $('btnGenerate').addEventListener('click', async () => {
       const inputs = getInputs();
 
@@ -577,10 +1088,25 @@
       $('btnGenerate').disabled = true;
 
       try {
+        const fd = new FormData();
+        const nc = $('nombreCliente').value.trim();
+        if (nc) fd.append('nombreCliente', nc);
+        if (inputs.searches != null) fd.append('searches', String(inputs.searches));
+        if (inputs.emails != null) fd.append('emails', String(inputs.emails));
+        if (inputs.sessions != null) fd.append('sessions', String(inputs.sessions));
+        if (inputs.support_hours != null) fd.append('support_hours', String(inputs.support_hours));
+        if (inputs.textPercentage != null) fd.append('textPercentage', String(inputs.textPercentage));
+        const re = $('resumenEjecutivo').value.trim();
+        if (re) fd.append('resumenEjecutivo', $('resumenEjecutivo').value);
+        const logoFile = $('logo').files[0];
+        if (logoFile) {
+          const logoToSend = await normalizeLogoToSquareContain(logoFile);
+          fd.append('logo', logoToSend);
+        }
+
         const res = await fetch('/api/generate', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(inputs),
+          body: fd,
         });
 
         const data = await res.json();
@@ -598,7 +1124,6 @@
     function renderResult(data) {
       $('presentationLink').href = data.presentationUrl;
 
-      // Slides info
       let infoHtml = '<strong>Slides modificadas:</strong> ';
       if (data.slides_modified.length > 0) {
         infoHtml += data.slides_modified
@@ -620,6 +1145,7 @@
       $('slidesInfo').innerHTML = infoHtml;
       $('resultJson').textContent = JSON.stringify(data, null, 2);
       $('resultSection').classList.add('active');
+      $('resultSection').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
 
     function showError(msg) {
@@ -632,30 +1158,61 @@
       $('errorMsg').classList.remove('active');
     }
 
-    // Live preview on input change
-    let debounceTimer;
-    document.querySelectorAll('input[type="number"]').forEach(input => {
-      input.addEventListener('input', () => {
-        clearTimeout(debounceTimer);
-        debounceTimer = setTimeout(() => {
-          const inputs = getInputs();
-          if (Object.keys(inputs).length > 0) {
-            fetch('/api/preview', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(inputs),
-            })
-            .then(r => r.json())
-            .then(data => {
-              if (data.total !== undefined) renderPreview(data);
-            })
-            .catch(() => {});
-          } else {
-            $('previewSection').classList.remove('active');
-          }
-        }, 300);
+    (function setupLogoDropzone() {
+      const dz = $('logoDropzone');
+      const input = $('logo');
+      const hint = $('logoDropHint');
+      const defaultHint = 'PNG, JPEG, GIF o WebP · máx. 5 MB';
+      let dragDepth = 0;
+
+      function setHintFromFile() {
+        const f = input.files && input.files[0];
+        if (f) {
+          hint.textContent = f.name;
+          hint.classList.add('is-file');
+        } else {
+          hint.textContent = defaultHint;
+          hint.classList.remove('is-file');
+        }
+      }
+
+      input.addEventListener('change', setHintFromFile);
+
+      dz.addEventListener('dragenter', (e) => {
+        e.preventDefault();
+        dragDepth++;
+        dz.classList.add('is-dragover');
       });
+      dz.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dragDepth = Math.max(0, dragDepth - 1);
+        if (dragDepth === 0) dz.classList.remove('is-dragover');
+      });
+      dz.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+      });
+      dz.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dragDepth = 0;
+        dz.classList.remove('is-dragover');
+        const files = e.dataTransfer.files;
+        if (!files || !files.length) return;
+        const f = files[0];
+        const ok = /^image\/(png|jpeg|gif|webp)$/i.test(f.type);
+        if (!ok) return;
+        const dt = new DataTransfer();
+        dt.items.add(f);
+        input.files = dt.files;
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+    })();
+
+    document.querySelectorAll('input[type="number"]').forEach((el) => {
+      el.addEventListener('input', scheduleInvestmentPreview);
+      el.addEventListener('change', scheduleInvestmentPreview);
     });
+    scheduleInvestmentPreview();
   </script>
 </body>
 </html>

@@ -9,6 +9,9 @@ const SEARCH_PRICING = {
 
 const EMAIL_PRICE_PER_UNIT = 0.0008;
 
+/** USD por hora de soporte (hosting / SaaS) */
+export const SUPPORT_PRICE_PER_HOUR = 40;
+
 const SESSION_TIERS = [
   { min: 3_000_000, max: Infinity, price: 0.0010, label: '3M+' },
   { min: 1_000_000, max: 2_999_999, price: 0.0015, label: '1M - 2.999M' },
@@ -108,10 +111,13 @@ export function calculateTotal(inputs) {
   }
 
   if (inputs.support_hours != null && inputs.support_hours > 0) {
+    const hours = inputs.support_hours;
     result.support = {
-      hours: inputs.support_hours,
-      monthlyCost: 0, // Placeholder: pricing no definido
+      hours,
+      pricePerHour: SUPPORT_PRICE_PER_HOUR,
+      monthlyCost: round2(hours * SUPPORT_PRICE_PER_HOUR),
     };
+    result.total += result.support.monthlyCost;
   }
 
   result.total = round2(result.total);
